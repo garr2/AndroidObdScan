@@ -11,11 +11,25 @@ interface BtDataRepository {
 
     fun getDeviceList(): Observable<Set<BluetoothDevice>>
 
+    fun getAllBtData(): Observable<Map<String,String>>
+
+    fun getControllCommands(): Observable<Map<String, String>>
+
+    fun getEngineCommands(): Observable<Map<String, String>>
+
+    fun getFuelCommands(): Observable<Map<String, String>>
+
+    fun getPreashureCommands(): Observable<Map<String, String>>
+
+    fun getProtocolCommands(): Observable<Map<String, String>>
+
+    fun getTemperatureCommands(): Observable<Map<String, String>>
+
+    fun resetTroubleCodes(): Observable<String>
+
+    fun getDynamicRpm(): Observable<Map<String, String>>
+
     fun connect(deviceAddress: String): Completable
-
-    fun write(): Completable
-
-    fun read(): Observable<ByteArray>
 
     fun cancel()
 }

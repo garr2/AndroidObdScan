@@ -2,7 +2,7 @@ package com.innowise_group.androidobdscan.injection
 
 import com.garr.pavelbobrovko.domain.executor.PostExecutorThread
 import com.innowise_group.androidobdscan.executor.UIThread
-import com.innowise_group.data.repository.BtDatarepositoryImpl
+import com.innowise_group.data.repository.BtDataRepositoryImpl
 import com.innowise_group.domain.repository.BtDataRepository
 import com.innowise_group.domain.useCase.BtUseCase
 import dagger.Module
@@ -16,7 +16,7 @@ class AppModule {
             = BtUseCase(thread, repository)
 
     @Provides
-    fun provideBtDataRepository(): BtDataRepository = BtDatarepositoryImpl()
+    fun provideBtDataRepository(): BtDataRepository = BtDataRepositoryImpl()
 
     @Provides
     fun providePostExecutorThread() : PostExecutorThread = UIThread()

@@ -4,6 +4,10 @@ import android.app.Application
 import com.innowise_group.androidobdscan.injection.AppComponent
 import com.innowise_group.androidobdscan.injection.AppModule
 import com.innowise_group.androidobdscan.injection.DaggerAppComponent
+import com.crashlytics.android.Crashlytics
+import io.fabric.sdk.android.Fabric
+
+
 
 class ObdScanApplication: Application() {
 
@@ -20,6 +24,8 @@ class ObdScanApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        Fabric.with(this, Crashlytics())
 
         appComponent = DaggerAppComponent.builder()
             .appModule(AppModule())
