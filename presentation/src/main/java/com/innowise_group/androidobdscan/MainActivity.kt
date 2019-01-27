@@ -9,20 +9,22 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import com.crashlytics.android.Crashlytics
 import com.github.pires.obd.exceptions.UnableToConnectException
 import com.innowise_group.androidobdscan.app.ObdScanApplication
+import com.innowise_group.androidobdscan.presentation.adqapter.ObdDataAdapter
 import com.innowise_group.domain.useCase.BtUseCase
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.Exception
 import java.lang.NullPointerException
 import javax.inject.Inject
+import kotlin.Exception
 
 
 class MainActivity : AppCompatActivity() {
@@ -43,7 +45,8 @@ class MainActivity : AppCompatActivity() {
     private val devices = ArrayList<String>()
     private var deviceAddress: String = ""
     private val obdDataList = HashMap<String, String>()
-    private lateinit var adapter: ArrayAdapter<String>
+    private var obdDataArr = ArrayList<String>()
+    private val adapter = ObdDataAdapter()
 
     private val handler = Handler()
 
@@ -54,7 +57,8 @@ class MainActivity : AppCompatActivity() {
 
         Crashlytics.log("MESAGE")
 
-        setAdapter(obdDataList.transformToArray())
+        obdDataArr = obdDataList.transformToArray(obdDataArr)
+        setAdapter(obdDataArr)
 
         btnResetTroubles.setOnClickListener {
             val disposable = btDataUseCase.resetTroubleCodes()
@@ -78,8 +82,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         getBluetoothState()
     }
 
@@ -209,7 +213,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeBy(
                     onNext = {
                         obdDataList.putAll(it)
-                        notifyAdapter()
+                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
                         Crashlytics.logException(Exception(it.toString()))
                         tvScanResult.text = it.toString()
                     },
@@ -227,7 +231,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeBy(
                     onNext = {
                         obdDataList.putAll(it)
-                        notifyAdapter()
+                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
                         Crashlytics.logException(Exception(it.toString()))
                     },
                     onError = {
@@ -241,7 +245,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeBy(
                     onNext = {
                         obdDataList.putAll(it)
-                        notifyAdapter()
+                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
                         Crashlytics.logException(Exception(it.toString()))
                     },
                     onError = {
@@ -255,7 +259,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeBy(
                     onNext = {
                         obdDataList.putAll(it)
-                        notifyAdapter()
+                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
                         Crashlytics.logException(Exception(it.toString()))
                     },
                     onError = {
@@ -268,7 +272,7 @@ class MainActivity : AppCompatActivity() {
             addToDisposable(btDataUseCase.getPreashureCommands().subscribeBy(
                 onNext = {
                     obdDataList.putAll(it)
-                    notifyAdapter()
+                    notifyAdapter(obdDataList.transformToArray(obdDataArr))
                     Crashlytics.logException(Exception(it.toString()))
                 },
                 onError = {
@@ -282,7 +286,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeBy(
                     onNext = {
                         obdDataList.putAll(it)
-                        notifyAdapter()
+                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
                         Crashlytics.logException(Exception(it.toString()))
                     },
                     onError = {
@@ -296,7 +300,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeBy(
                     onNext = {
                         obdDataList.putAll(it)
-                        notifyAdapter()
+                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
                         Crashlytics.logException(Exception(it.toString()))
                     },
                     onError = {
@@ -333,12 +337,12 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    var dynamicRpm: Runnable = object : Runnable{
+    var dynamicRpm: Runnable = object : Runnable {
         override fun run() {
             try {
                 getDynamicRpm()
-                handler.postDelayed(this,2000)
-            }catch (e: Throwable) {
+                handler.postDelayed(this, 1000)
+            } catch (e: Throwable) {
                 e.printStackTrace()
                 Crashlytics.logException(e)
             }
@@ -347,26 +351,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getDynamicRpm() {
-            addToDisposable(btDataUseCase.getDynamicRpm()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter()
-                        getDynamicRpm()
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                    }
-                ))
+        addToDisposable(btDataUseCase.getDynamicRpm()
+            .subscribeBy(
+                onNext = {
+                    obdDataList.putAll(it)
+                    notifyAdapter(obdDataList.transformToArray(obdDataArr))
+                    btnDynamicRpm.text = it.toString()
+                },
+                onError = {
+                    Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
+                    Log.d("myLog", "Connection failed, error: $it")
+                    Crashlytics.logException(it)
+                }
+            ))
     }
 
-    private fun Map<String, String>.transformToArray(): Array<String> {
+    private fun Map<String, String>.transformToArray(arr: ArrayList<String>): ArrayList<String> {
         if (this.isNotEmpty()) {
             Crashlytics.logException(NullPointerException(this.toString()))
         }
-        val arr = Array(this.size) { "" }
+        arr.clear()
         var counter = 0
         val iterator = this.iterator()
         while (iterator.hasNext()) {
@@ -376,17 +380,18 @@ class MainActivity : AppCompatActivity() {
         return arr
     }
 
-    private fun setAdapter(arr: Array<String>) {
-        adapter = ArrayAdapter(
-            this
-            , android.R.layout.simple_expandable_list_item_1
-            , arr
-        )
-        adapter.setNotifyOnChange(true)
+    private fun setAdapter(arr: ArrayList<String>) {
+        Crashlytics.logException(Exception(arr.toString()))
+
+        adapter.obdDataList = arr
+        lvBtList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL,false)
         lvBtList.adapter = adapter
     }
 
-    private fun notifyAdapter() = adapter.notifyDataSetChanged()
+    private fun notifyAdapter(arr: ArrayList<String>) {
+        adapter.obdDataList = arr
+        adapter.notifyDataSetChanged()
+    }
 
     private fun addToDisposable(disposable: Disposable) {
         compositeDisposable.add(disposable)
