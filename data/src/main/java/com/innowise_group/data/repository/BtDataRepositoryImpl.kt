@@ -7,10 +7,10 @@ import com.innowise_group.domain.entity.BtState
 import com.innowise_group.domain.repository.BtDataRepository
 import io.reactivex.Completable
 import io.reactivex.Observable
+import javax.inject.Inject
 
-class BtDataRepositoryImpl : BtDataRepository {
+class BtDataRepositoryImpl @Inject constructor(private val btAdapter: ConnectionBtAdapter) : BtDataRepository {
 
-    private val btAdapter = ConnectionBtAdapter()
     private var obdBtService: ObdBtService? = null
 
     override fun getState(): Observable<BtState> {
@@ -21,41 +21,50 @@ class BtDataRepositoryImpl : BtDataRepository {
         return btAdapter.getDeviceList()
     }
 
-    override fun getAllBtData(): Observable<Map<String, String>> {
-        return obdBtService?.getAllData() ?: throw NullPointerException("ObdService is null")
+    override fun getSpeedBtData(): Observable<String> {
+        return obdBtService?.getSpeedData() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getControllCommands(): Observable<Map<String, String>> {
-        return obdBtService?.getControlCommands() ?: throw NullPointerException("ObdService is null")
+    override fun getControlData(): Observable<String> {
+        return obdBtService?.getControlData() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getEngineCommands(): Observable<Map<String, String>> {
-        return obdBtService?.getEngineCommands() ?: throw NullPointerException("ObdService is null")
+    override fun getEngineData(): Observable<String> {
+        return obdBtService?.getEngineData() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getFuelCommands(): Observable<Map<String, String>> {
-        return obdBtService?.getFuelCommands() ?: throw NullPointerException("ObdService is null")
+    override fun getFuelData(): Observable<String> {
+        return obdBtService?.getFuelData() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getPreashureCommands(): Observable<Map<String, String>> {
-        return obdBtService?.getPressureCommands() ?: throw NullPointerException("ObdService is null")
+    override fun getPowerData(): Observable<String> {
+        return obdBtService?.getPowerData() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getProtocolCommands(): Observable<Map<String, String>> {
-        return obdBtService?.getProtocolCommands() ?: throw NullPointerException("ObdService is null")
+    override fun getPressureData(): Observable<String> {
+        return obdBtService?.getPressureData() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getTemperatureCommands(): Observable<Map<String, String>> {
-        return obdBtService?.getTemperatureCommands() ?: throw NullPointerException("ObdService is null")
+    /*override fun getProtocolData(): Observable<Map<String, String>> {
+        return obdBtService?.getProtocolData() ?: throw NullPointerException("ObdService is null")
+    }*/
+
+    override fun getTemperatureData(): Observable<String> {
+        return obdBtService?.getTemperatureData() ?: throw NullPointerException("ObdService is null")
     }
 
     override fun resetTroubleCodes(): Observable<String> {
         return obdBtService?.resetTroubleCodes() ?: throw NullPointerException("ObdService is null")
     }
 
-    override fun getDynamicRpm(): Observable<Map<String, String>> {
+    override fun getDynamicRpm(): Observable<String> {
         return obdBtService?.getDynamicRPM() ?: throw NullPointerException("ObdService is null")
     }
+
+    override fun getTroubleCodesData(): Observable<String> {
+        return obdBtService?.getTroubleCodes() ?: throw NullPointerException("ObdService is null")
+    }
+
 
     override fun connect(deviceAddress: String): Completable {
         return btAdapter.connect(deviceAddress).doOnComplete {
@@ -66,5 +75,16 @@ class BtDataRepositoryImpl : BtDataRepository {
     override fun cancel() {
         obdBtService?.close()
         btAdapter.cancel()
+    }
+
+    override fun getTestData(): Observable<HashMap<String, ArrayList<String>>> {
+        val list = ArrayList<String>()
+        list.add("test")
+        list.add("test1")
+        list.add("test2")
+        list.add("test3")
+        val map = HashMap<String, ArrayList<String>>()
+        map["test"] = list
+        return Observable.just(map)
     }
 }

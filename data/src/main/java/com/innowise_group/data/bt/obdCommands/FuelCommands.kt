@@ -8,7 +8,7 @@ import com.innowise_group.data.bt.*
 
 class FuelCommands(private val socket: BluetoothSocket) {
 
-    fun getCommands(): Map<String, String> {
+    fun getAllData(): Map<String, String> {
         val map = HashMap<String, String>()
         map[AIR_FUEL_RATIO] = getAirFuelRatio()
         map[CONSUMPTION_RATE] = getConsumptionRate()
@@ -23,13 +23,13 @@ class FuelCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AirFuelRatioCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AirFuelRatio: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AirFuelRatio: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AirFuelRatio: $NODATA"
         }
     }
 
@@ -37,13 +37,13 @@ class FuelCommands(private val socket: BluetoothSocket) {
         return try {
             val command = ConsumptionRateCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "FuelConsumption: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "FuelConsumption: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "FuelConsumption: $NODATA"
         }
     }
 
@@ -51,13 +51,13 @@ class FuelCommands(private val socket: BluetoothSocket) {
         return try {
             val command = FindFuelTypeCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "FuelType: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "FuelType: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "FuelType: $NODATA"
         }
     }
 
@@ -65,13 +65,13 @@ class FuelCommands(private val socket: BluetoothSocket) {
         return try {
             val command = FuelLevelCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "FuelLevel: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "FuelLevel: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "FuelLevel: $NODATA"
         }
     }
 
@@ -79,13 +79,13 @@ class FuelCommands(private val socket: BluetoothSocket) {
         return try {
             val command = FuelTrimCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "FuelTrim: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "FuelTrim: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "FuelTrim: $NODATA"
         }
     }
 
@@ -93,13 +93,13 @@ class FuelCommands(private val socket: BluetoothSocket) {
         return try {
             val command = WidebandAirFuelRatioCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "WidebandAirFuelRatio: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "WidebandAirFuelRatio: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "WidebandAirFuelRatio: $NODATA"
         }
     }
 

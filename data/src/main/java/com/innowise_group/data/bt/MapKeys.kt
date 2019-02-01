@@ -1,6 +1,7 @@
 package com.innowise_group.data.bt
 
-const val NODATA = "NO DATA"
+const val NODATA = "not available"
+const val EXCEPTION = "exception"
 const val ENGINE_RPM_KEY = "engineRpmKey"
 const val SPEED_KEY = "speedKey"
 
@@ -51,3 +52,5 @@ const val AVAILABLE_PIDS_41_60 = "avaliablePids_41_60"
 const val AIR_INTAKE_TEMPERATURE = "airIntakeTemperature"
 const val AMBIENT_AIR_TEMPERATURE = "ambientAirTemperature"
 const val ENGINE_COOLANT_TEMPERATURE = "engineCoolantTemperature"
+
+const val OBDII_TROUBLE_CODES = "obdIITroubleCodes"

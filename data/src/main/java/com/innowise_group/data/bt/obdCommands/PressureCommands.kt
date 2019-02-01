@@ -10,7 +10,7 @@ import com.innowise_group.data.bt.*
 
 class PressureCommands(private val socket: BluetoothSocket) {
 
-    fun getCommands(): Map<String, String> {
+    fun getAllData(): Map<String, String> {
         val map = HashMap<String, String>()
         map[BAROMETRIC_PRESSURE] = getBarometricPressure()
         map[FUEL_PRESSURE] = getFuelPressure()
@@ -23,13 +23,13 @@ class PressureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = BarometricPressureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "BarometricPressure: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "BarometricPressure: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "BarometricPressure: $NODATA"
         }
     }
 
@@ -37,13 +37,13 @@ class PressureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = FuelPressureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "FuelPressure: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "FuelPressure: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "FuelPressure: $NODATA"
         }
     }
 
@@ -51,13 +51,13 @@ class PressureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = FuelPressureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "FuelRailPressure: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "FuelRailPressure: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "FuelRailPressure: $NODATA"
         }
     }
 
@@ -65,13 +65,13 @@ class PressureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = IntakeManifoldPressureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "IntaceManifoldPressure: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "IntaceManifoldPressure: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "IntaceManifoldPressure: $NODATA"
         }
     }
 }

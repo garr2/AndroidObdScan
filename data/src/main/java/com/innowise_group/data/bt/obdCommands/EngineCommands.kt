@@ -8,7 +8,7 @@ import com.innowise_group.data.bt.*
 
 class EngineCommands(private val socket: BluetoothSocket) {
 
-    fun getCommands(): Map<String, String> {
+    fun getAllDAta(): Map<String, String> {
         val map = HashMap<String, String>()
         map[ABSOLUTE_LOAD] = getAbsoluteLoad()
         map[LOAD] = getLoad()
@@ -24,13 +24,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AbsoluteLoadCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AbsoluteLoad: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AbsoluteLoad: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AbsoluteLoad: $NODATA"
         }
     }
 
@@ -38,13 +38,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = LoadCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "Load: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "Load: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "Load: $NODATA"
         }
     }
 
@@ -52,13 +52,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = MassAirFlowCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "MassAirFlow: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "MassAirFlow: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "MassAirFlow: $NODATA"
         }
     }
 
@@ -66,13 +66,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = OilTempCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "OilTemp: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "OilTemp: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "OilTemp: $NODATA"
         }
     }
 
@@ -80,13 +80,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = RPMCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+        "RPM: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "RPM: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "RPM: $NODATA"
         }
     }
 
@@ -94,13 +94,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = RuntimeCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "Runtime: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "Runtime: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "Runtime: $NODATA"
         }
     }
 
@@ -108,13 +108,13 @@ class EngineCommands(private val socket: BluetoothSocket) {
         return try {
             val command = ThrottlePositionCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "ThrottlePosition: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "ThrottlePosition: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "ThrottlePosition: $NODATA"
         }
     }
 }

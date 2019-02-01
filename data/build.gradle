@@ -11,6 +11,7 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
 
@@ -33,6 +34,8 @@ dependencies {
     implementation "javax.inject:javax.inject:1"
 
     api 'com.github.pires:obd-java-api:1.0'
+    implementation 'com.github.MacFJA:OBD2:1.1.0'
+    implementation 'io.apisense:rhino-android:1.0'
 
     implementation 'com.google.firebase:firebase-crash:16.2.1'
     implementation 'com.google.firebase:firebase-core:16.0.6'

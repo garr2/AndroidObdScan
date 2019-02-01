@@ -13,7 +13,7 @@ import com.innowise_group.data.bt.NODATA
 
 class ProtocolCommands(private val socket: BluetoothSocket) {
 
-    fun getCommands(): Map<String, String> {
+    fun getAllDAta(): Map<String, String> {
         val map = HashMap<String, String>()
         map[AVAILABLE_PIDS_01_20] = getAvailablePids01to20()
         map[AVAILABLE_PIDS_21_40] = getAvailablePids21to40()
@@ -25,13 +25,13 @@ class ProtocolCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AvailablePidsCommand_01_20()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AvailablePids01to20: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AvailablePids01to20: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AvailablePids01to20: $NODATA"
         }
     }
 
@@ -39,13 +39,13 @@ class ProtocolCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AvailablePidsCommand_21_40()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AvailablePids21to40: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AvailablePids21to40: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AvailablePids21to40: $NODATA"
         }
     }
 
@@ -53,13 +53,13 @@ class ProtocolCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AvailablePidsCommand_41_60()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AvailablePids41to60: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AvailablePids41to60: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AvailablePids41to60: $NODATA"
         }
     }
 }

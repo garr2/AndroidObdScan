@@ -13,7 +13,7 @@ import com.innowise_group.data.bt.NODATA
 
 class TemperatureCommands(private val socket: BluetoothSocket) {
 
-    fun getCommands(): Map<String, String> {
+    fun getAllDAta(): Map<String, String> {
         val map = HashMap<String, String>()
         map[AIR_INTAKE_TEMPERATURE] = getAirIntakeTemperature()
         map[AMBIENT_AIR_TEMPERATURE] = getAmbientAirTemperature()
@@ -25,13 +25,13 @@ class TemperatureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AirIntakeTemperatureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AirIntakeTemperature: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AirIntakeTemperature: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AirIntakeTemperature: $NODATA"
         }
     }
 
@@ -39,13 +39,13 @@ class TemperatureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = AmbientAirTemperatureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "AmbientAirTemperature: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "AmbientAirTemperature: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "AmbientAirTemperature: $NODATA"
         }
     }
 
@@ -53,13 +53,13 @@ class TemperatureCommands(private val socket: BluetoothSocket) {
         return try {
             val command = EngineCoolantTemperatureCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "EngineCoolantTemperature: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "EngineCoolantTemperature: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "EngineCoolantTemperature: $NODATA"
         }
     }
 }

@@ -12,7 +12,7 @@ import java.util.*
 
 class ConnectionBtAdapter {
 
-    protected val bluetooth: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    private val bluetooth: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     var socket: BluetoothSocket? = null
 
     fun getState(): Observable<BtState> {
@@ -46,7 +46,6 @@ class ConnectionBtAdapter {
     }
 
     fun cancel() {
-
         socket?.close()
     }
 

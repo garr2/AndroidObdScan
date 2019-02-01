@@ -5,10 +5,13 @@ import com.crashlytics.android.Crashlytics
 import com.github.pires.obd.commands.control.*
 import com.github.pires.obd.exceptions.NoDataException
 import com.innowise_group.data.bt.*
+import com.innowise_group.data.bt.extLibraryCommands.LocalPendingTroubleCodesCommand
+import com.innowise_group.data.bt.extLibraryCommands.LocalPermanentTroubleCodesCommand
+import com.innowise_group.data.bt.extLibraryCommands.LocalTroubleCodesCommand
 
 class ControlCommands(private val socket: BluetoothSocket) {
 
-    fun getCommands(): Map<String, String> {
+    fun getAllData(): Map<String, String> {
         val map = HashMap<String, String>()
         map[DISTANCE_MIL_ON] = getDistanceMilOn()
         map[DISTANCE_SINCE_CC] = getDistanceSinceCC()
@@ -16,8 +19,8 @@ class ControlCommands(private val socket: BluetoothSocket) {
         map[EQUIVALENT_RATIO] = getEquivalentRatio()
         map[IGNITION_MONITOR] = getIgnitionMonitor()
         map[MODULE_VOLTAGE] = getModuleVoltage()
-        //map[PENDING_TROUBLE_CODES] = getPendingTroubleCodes()
-            //map[PERMANENT_TROUBLE_CODES] = getPermanentTroubleCodes()
+        map[PENDING_TROUBLE_CODES] = getPendingTroubleCodes()
+        map[PERMANENT_TROUBLE_CODES] = getPermanentTroubleCodes()
         map[TIMING_ADVANCED] = getTimingAdvance()
         map[TROUBLE_CODES] = getTroubleCodes()
         map[VIN] = getVin()
@@ -28,13 +31,13 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = DistanceMILOnCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "DistanceMilOn: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "DistanceMilOn: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "DistanceMilOn: $NODATA"
         }
     }
 
@@ -42,13 +45,13 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = DistanceSinceCCCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "DistanceSinceCC: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "DistanceSinceCC: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "DistanceSinceCC: $NODATA"
         }
     }
 
@@ -56,13 +59,13 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = DtcNumberCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "DtcNumber: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "DtcNumber: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "DtcNumber: $NODATA"
         }
     }
 
@@ -70,13 +73,13 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = EquivalentRatioCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "EquivalenceRatio: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "EquivalenceRatio: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "EquivalenceRatio: $NODATA"
         }
     }
 
@@ -84,13 +87,13 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = IgnitionMonitorCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "IgnitionMonitor: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "IgnitionMonitor: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "IgnitionMonitor: $NODATA"
         }
     }
 
@@ -98,41 +101,41 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = ModuleVoltageCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "ModuleVoltage: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "ModuleVoltage: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "ModuleVoltage: $NODATA"
         }
     }
 
     private fun getPendingTroubleCodes(): String {
         return try {
-            val command = PendingTroubleCodesCommand()
+            val command = LocalPendingTroubleCodesCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "PendingTroubleCodes: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "PendingTroubleCodes: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "PendingTroubleCodes: $NODATA"
         }
     }
 
     private fun getPermanentTroubleCodes(): String {
         return try {
-            val command = PermanentTroubleCodesCommand()
+            val command = LocalPermanentTroubleCodesCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "PermanentTroubleCodes: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "PermanentTroubleCodes: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "PermanentTroubleCodes: $NODATA"
         }
     }
 
@@ -140,27 +143,27 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = TimingAdvanceCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "TimingAdvance: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "TimingAdvance: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "TimingAdvance: $NODATA"
         }
     }
 
     private fun getTroubleCodes(): String {
         return try {
-            val command = TroubleCodesCommand()
+            val command = LocalTroubleCodesCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "TroubleCodes: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "TroubleCodes: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "TroubleCodes: $NODATA"
         }
     }
 
@@ -168,13 +171,13 @@ class ControlCommands(private val socket: BluetoothSocket) {
         return try {
             val command = VinCommand()
             command.run(socket.inputStream, socket.outputStream)
-            command.formattedResult
+            "VinCode: ${command.formattedResult}"
         } catch (n: NoDataException) {
             n.printStackTrace()
-            NODATA
+            "VinCode: $NODATA"
         } catch (e: Exception) {
             Crashlytics.logException(e)
-            NODATA
+            "VinCode: $NODATA"
         }
     }
 }

@@ -16,21 +16,27 @@ import android.widget.Toast
 import com.crashlytics.android.Crashlytics
 import com.github.pires.obd.exceptions.UnableToConnectException
 import com.innowise_group.androidobdscan.app.ObdScanApplication
-import com.innowise_group.androidobdscan.presentation.adqapter.ObdDataAdapter
+import com.innowise_group.androidobdscan.presentation.adapter.ObdDataAdapter
 import com.innowise_group.domain.useCase.BtUseCase
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.NullPointerException
 import javax.inject.Inject
-import kotlin.Exception
 
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val BT_REQUEST_CODE = 1
+
+        const val CONTROLL_DATA = "Control data"
+        const val ENGINE_DATA = "Engine data"
+        const val FUEL_DATA = "Fuel data"
+        const val POWER_DATA = "Power data"
+        const val PRESSURE_DATA = "Pressure data"
+        const val TEMPERATURE_DATA = "Temperature data"
+        const val TROUBLE_CODES = "Trouble codes"
     }
 
     @Inject
@@ -44,9 +50,17 @@ class MainActivity : AppCompatActivity() {
     private var deviceStrs = ArrayList<String>()
     private val devices = ArrayList<String>()
     private var deviceAddress: String = ""
-    private val obdDataList = HashMap<String, String>()
-    private var obdDataArr = ArrayList<String>()
+    private var pevDataArrList = ""
     private val adapter = ObdDataAdapter()
+
+    private val obdDataList = HashMap<String, ArrayList<String>>()
+    private val controlDataList = ArrayList<String>()
+    private val engineDataList = ArrayList<String>()
+    private val fuelDataList = ArrayList<String>()
+    private val powerDataList = ArrayList<String>()
+    private val pressureDataList = ArrayList<String>()
+    private val temperatureDataList = ArrayList<String>()
+    private val troubleCodesList = ArrayList<String>()
 
     private val handler = Handler()
 
@@ -55,40 +69,35 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Crashlytics.log("MESAGE")
-
-        obdDataArr = obdDataList.transformToArray(obdDataArr)
-        setAdapter(obdDataArr)
+        setAdapter(obdDataList.transformToArray())
 
         btnResetTroubles.setOnClickListener {
             val disposable = btDataUseCase.resetTroubleCodes()
-                .subscribeBy(
-                    onNext = {
-                        Toast.makeText(
-                            this, "Troubles reset",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        getAllData()
-                    },
-                    onError = {
+                    .subscribeBy(
+                            onNext = {
+                                Toast.makeText(
+                                        this, "Troubles reset",
+                                        Toast.LENGTH_SHORT
+                                ).show()
+                                getAndShowAllData()
+                            },
+                            onError = {
 
-                    }
-                )
+                            }
+                    )
             addToDisposable(disposable)
-        }
-
-        btnDynamicRpm.setOnClickListener {
-            handler.post(dynamicRpm)
         }
     }
 
     override fun onStart() {
         super.onStart()
         getBluetoothState()
+        //setTestData()
     }
 
     override fun onDestroy() {
         handler.removeCallbacks(dynamicRpm)
+        handler.removeCallbacks(dynamicData)
         btDataUseCase.cancel()
         compositeDisposable.clear()
         super.onDestroy()
@@ -96,20 +105,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun getBluetoothState() {
         val disposable = btDataUseCase.getState()
-            .subscribeBy(
-                onNext = {
-                    if (it.isEnabled) {
-                        initDeviceList()
-                    } else requestBluetoothActivation()
-                },
-                onError = {
-                    Toast.makeText(
-                        this,
-                        "Error: bluetooth is not available",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            )
+                .subscribeBy(
+                        onNext = {
+                            if (it.isEnabled) {
+                                initDeviceList()
+                            } else requestBluetoothActivation()
+                        },
+                        onError = {
+                            Toast.makeText(
+                                    this,
+                                    "Error: bluetooth is not available",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                )
         addToDisposable(disposable)
     }
 
@@ -125,9 +134,9 @@ class MainActivity : AppCompatActivity() {
                 initDeviceList()
             } else {
                 Toast.makeText(
-                    this,
-                    "The application can't work without bluetooth",
-                    Toast.LENGTH_LONG
+                        this,
+                        "The application can't work without bluetooth",
+                        Toast.LENGTH_LONG
                 ).show()
                 finish()
             }
@@ -136,15 +145,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun initDeviceList() {
         val disposable = btDataUseCase.getDeviceList().subscribeBy(
-            onNext = {
-                Log.d("myLog", it.toString())
-                deviceList = it
-                if (deviceList.isNotEmpty())
-                    showBtListDialog()
-            },
-            onError = {
-                Log.d("myLog", it.toString())
-            }
+                onNext = {
+                    Log.d("myLog", it.toString())
+                    deviceList = it
+                    if (deviceList.isNotEmpty())
+                        showBtListDialog()
+                },
+                onError = {
+                    Log.d("myLog", it.toString())
+                }
         )
 
         addToDisposable(disposable)
@@ -160,8 +169,8 @@ class MainActivity : AppCompatActivity() {
         val alertDialog = AlertDialog.Builder(this)
 
         val adapter = ArrayAdapter<String>(
-            this, android.R.layout.select_dialog_singlechoice,
-            deviceStrs.toArray(arrayOfNulls<String>(deviceStrs.size))
+                this, android.R.layout.select_dialog_singlechoice,
+                deviceStrs.toArray(arrayOfNulls<String>(deviceStrs.size))
         )
 
         if (deviceList.isNotEmpty()) {
@@ -190,140 +199,226 @@ class MainActivity : AppCompatActivity() {
 
     private fun connectToDevice() {
         val disposable = btDataUseCase.connect(deviceAddress).subscribeBy(
-            onComplete = {
-                getAllData()
-                //getDynamicRpm()
-                btnDynamicRpm.isClickable = true
-            },
-            onError = {
-                Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                Log.d("myLog", "Connection failed, error: $it")
-                //Crashlytics.logException(it)
-            }
-        )
-        addToDisposable(disposable)
-    }
-
-    private var counter = 0
-
-    private fun getAllData() {
-
-        try {
-            val disposable = btDataUseCase.getAllBtData()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                        Crashlytics.logException(Exception(it.toString()))
-                        tvScanResult.text = it.toString()
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                        tvScanResult.text = it.toString()
-                    }
-                )
-            addToDisposable(disposable)
-
-
-            addToDisposable(btDataUseCase.getControllCommands()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                        Crashlytics.logException(Exception(it.toString()))
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                    }
-                ))
-
-            addToDisposable(btDataUseCase.getEngineCommands()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                        Crashlytics.logException(Exception(it.toString()))
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                    }
-                ))
-
-            addToDisposable(btDataUseCase.getFuelCommands()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                        Crashlytics.logException(Exception(it.toString()))
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                    }
-                ))
-
-            addToDisposable(btDataUseCase.getPreashureCommands().subscribeBy(
-                onNext = {
-                    obdDataList.putAll(it)
-                    notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                    Crashlytics.logException(Exception(it.toString()))
+                onComplete = {
+                    getAndShowAllData()
                 },
                 onError = {
                     Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
                     Log.d("myLog", "Connection failed, error: $it")
-                    Crashlytics.logException(it)
+                    //Crashlytics.logException(it)
                 }
-            ))
+        )
+        addToDisposable(disposable)
+    }
 
-            addToDisposable(btDataUseCase.getProtocolCommands()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                        Crashlytics.logException(Exception(it.toString()))
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                    }
-                ))
-
-            addToDisposable(btDataUseCase.getTemperatureCommands()
-                .subscribeBy(
-                    onNext = {
-                        obdDataList.putAll(it)
-                        notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                        Crashlytics.logException(Exception(it.toString()))
-                    },
-                    onError = {
-                        Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                        Log.d("myLog", "Connection failed, error: $it")
-                        Crashlytics.logException(it)
-                    }
-                ))
-            Crashlytics.log("MESAGE")
-        } catch (uc: UnableToConnectException) {
-            Crashlytics.logException(uc)
-            showUnableConnectErrorDialog()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            if (counter <= 4) {
-                counter++
-                getAllData()
-            } else {
-                Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-                Crashlytics.logException(e)
+    private fun getAndShowAllData() {
+        try {
+            when (pevDataArrList) {
+                "" -> getControlData()
+                CONTROLL_DATA -> getEngineData()
+                ENGINE_DATA -> getFuelData()
+                FUEL_DATA -> getPowerData()
+                POWER_DATA -> getPressureData()
+                PRESSURE_DATA -> getTemperatureData()
+                TEMPERATURE_DATA -> getTroubleCodes()
+                TROUBLE_CODES -> {
+                    pevDataArrList = ""
+                    handler.post(dynamicData)
+                    handler.post(dynamicRpm)
+                }
             }
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
         }
+    }
 
+    private fun notifyData() {
+        try {
+            when (pevDataArrList) {
+                "" -> getEngineData()
+                ENGINE_DATA -> getFuelData()
+                FUEL_DATA -> getPowerData()
+                POWER_DATA -> getPressureData()
+                PRESSURE_DATA -> getTemperatureData()
+                TEMPERATURE_DATA -> {
+                    pevDataArrList = ""
+                    handler.post(dynamicData)
+                }
+            }
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getControlData() {
+        controlDataList.clear()
+        controlDataList.add(CONTROLL_DATA)
+        try {
+            addToDisposable(btDataUseCase.getControlData()
+                    .subscribeBy(
+                            onNext = {
+                                controlDataList.add(it)
+                                obdDataList[CONTROLL_DATA] = controlDataList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = CONTROLL_DATA
+
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getEngineData() {
+        engineDataList.clear()
+        engineDataList.add(ENGINE_DATA)
+        try {
+            addToDisposable(btDataUseCase.getEngineData()
+                    .subscribeBy(
+                            onNext = {
+                                engineDataList.add(it)
+                                obdDataList[ENGINE_DATA] = engineDataList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = ENGINE_DATA
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t:Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getFuelData() {
+        fuelDataList.clear()
+        fuelDataList.add(FUEL_DATA)
+        try {
+            addToDisposable(btDataUseCase.getFuelData()
+                    .subscribeBy(
+                            onNext = {
+                                fuelDataList.add(it)
+                                obdDataList[FUEL_DATA] = fuelDataList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = FUEL_DATA
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getPowerData() {
+        powerDataList.clear()
+        powerDataList.add(POWER_DATA)
+        try {
+            addToDisposable(btDataUseCase.getPowerData()
+                    .subscribeBy(
+                            onNext = {
+                                powerDataList.add(it)
+                                obdDataList[POWER_DATA] = powerDataList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = POWER_DATA
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getPressureData() {
+        pressureDataList.clear()
+        pressureDataList.add(PRESSURE_DATA)
+        try {
+            addToDisposable(btDataUseCase.getPressureData()
+                    .subscribeBy(
+                            onNext = {
+                                pressureDataList.add(it)
+                                obdDataList[PRESSURE_DATA] = pressureDataList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = PRESSURE_DATA
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getTemperatureData() {
+        temperatureDataList.clear()
+        temperatureDataList.add(TEMPERATURE_DATA)
+        try {
+            addToDisposable(btDataUseCase.getTemperatureData()
+                    .subscribeBy(
+                            onNext = {
+                                temperatureDataList.add(it)
+                                obdDataList[TEMPERATURE_DATA] = temperatureDataList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = TEMPERATURE_DATA
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
+    }
+
+    private fun getTroubleCodes() {
+        troubleCodesList.clear()
+        troubleCodesList.add(TROUBLE_CODES)
+        try {
+            addToDisposable(btDataUseCase.getTroubleCodesData()
+                    .subscribeBy(
+                            onNext = {
+                                troubleCodesList.add(it)
+                                obdDataList[TROUBLE_CODES] = troubleCodesList
+                                notifyAdapter(obdDataList.transformToArray())
+                            }, onError = {
+                        Crashlytics.logException(it)
+                    },
+                            onComplete = {
+                                pevDataArrList = TROUBLE_CODES
+                                getAndShowAllData()
+                            }
+                    ))
+        }catch (t: Throwable){
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
     }
 
     private fun showUnableConnectErrorDialog() {
@@ -341,7 +436,7 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             try {
                 getDynamicRpm()
-                handler.postDelayed(this, 1000)
+                handler.postDelayed(this, 500)
             } catch (e: Throwable) {
                 e.printStackTrace()
                 Crashlytics.logException(e)
@@ -350,41 +445,56 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getDynamicRpm() {
-        addToDisposable(btDataUseCase.getDynamicRpm()
-            .subscribeBy(
-                onNext = {
-                    obdDataList.putAll(it)
-                    notifyAdapter(obdDataList.transformToArray(obdDataArr))
-                    btnDynamicRpm.text = it.toString()
-                },
-                onError = {
-                    Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
-                    Log.d("myLog", "Connection failed, error: $it")
-                    Crashlytics.logException(it)
-                }
-            ))
+    var dynamicData: Runnable = Runnable {
+        try {
+            notifyData()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            Crashlytics.logException(t)
+        }
     }
 
-    private fun Map<String, String>.transformToArray(arr: ArrayList<String>): ArrayList<String> {
-        if (this.isNotEmpty()) {
-            Crashlytics.logException(NullPointerException(this.toString()))
-        }
-        arr.clear()
-        var counter = 0
+    private fun getDynamicRpm() {
+        addToDisposable(btDataUseCase.getDynamicRpm()
+                .subscribeBy(
+                        onNext = {
+                            tvRpm.text = it
+                        },
+                        onError = {
+                            Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
+                            Log.d("myLog", "Connection failed, error: $it")
+                            Crashlytics.logException(it)
+                        }
+                ))
+
+        val disposable = btDataUseCase.getSpeedData()
+                .subscribeBy(
+                        onNext = {
+                            tvSpeed.text = it
+                        },
+                        onError = {
+                            if (it is UnableToConnectException) throw it
+                            Toast.makeText(this, "Connection failed, error: $it", Toast.LENGTH_SHORT).show()
+                            Log.d("myLog", "Connection failed, error: $it")
+                            Crashlytics.logException(it)
+                        }
+                )
+        addToDisposable(disposable)
+    }
+
+    private fun Map<String, ArrayList<String>>.transformToArray(): ArrayList<String> {
+        val list = ArrayList<String>()
         val iterator = this.iterator()
         while (iterator.hasNext()) {
-            arr[counter] = iterator.next().value
-            counter++
+            list.addAll(iterator.next().value)
         }
-        return arr
+        Log.d("myLog", list.toString())
+        return list
     }
 
     private fun setAdapter(arr: ArrayList<String>) {
-        Crashlytics.logException(Exception(arr.toString()))
-
         adapter.obdDataList = arr
-        lvBtList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL,false)
+        lvBtList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         lvBtList.adapter = adapter
     }
 
@@ -431,4 +541,17 @@ class MainActivity : AppCompatActivity() {
         }
 
     }*/
+
+    private fun setTestData() {
+        addToDisposable(btDataUseCase.getTestData()
+                .subscribeBy(
+                        onNext = {
+                            notifyAdapter(it.transformToArray())
+                        },
+                        onError = {
+
+                        }
+                )
+        )
+    }
 }
